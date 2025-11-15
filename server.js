@@ -5,10 +5,16 @@ const sharp = require("sharp");
 const app = express();
 const upload = multer();
 
+// convert endpoint
 app.post("/convert", upload.single("file"), async (req, res) => {
     try {
+        if (!req.file) {
+            return res.status(400).json({ error: "No file uploaded" });
+        }
+
         const inputBuffer = req.file.buffer;
 
+        // Convert GIF → JPG
         const output = await sharp(inputBuffer)
             .jpeg()
             .toBuffer();
@@ -20,12 +26,13 @@ app.post("/convert", upload.single("file"), async (req, res) => {
 
         res.send(output);
     } catch (err) {
-        console.error(err);
-        res.status(500).json({ error: "Convert failed" });
+        console.error("Convert error:", err);
+        res.status(500).json({ error: "Conversion failed" });
     }
 });
 
-const port = process.env.PORT || 3000;
-app.listen(port, () => {
-    console.log("GIF→JPG service running on port " + port);
+// ⭐ IMPORTANT for Zeabur
+const PORT = process.env.PORT || 8080;
+app.listen(PORT, () => {
+    console.log(`GIF→JPG service running on port ${PORT}`);
 });
